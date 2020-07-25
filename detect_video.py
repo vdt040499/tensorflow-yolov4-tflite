@@ -13,6 +13,7 @@ import cv2
 import numpy as np
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
+import plateprocess.handlehalfofplate as handlehalfofplate
 
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
@@ -103,7 +104,27 @@ def main(_argv):
             score_threshold=FLAGS.score
         )
         pred_bbox = [boxes.numpy(), scores.numpy(), classes.numpy(), valid_detections.numpy()]
-        image = utils.draw_bbox(frame, pred_bbox)
+        image, x, y, w, h = utils.draw_bbox(frame, pred_bbox)
+
+        #Handle license plate
+        if x == 0 and y == 0 and w == 0 and h == 0:
+            image = cv2.putText(image, "no plate", (0, 30),
+                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+        else:
+            cropped = frame[int(y):int(y+h), int(x):int(x+w)]
+            plate_upper = cropped[0:int(cropped.shape[0]/2), 0:int(cropped.shape[1])]
+            plate_lower = cropped[int(cropped.shape[0]/2): int(cropped.shape[0]), 0:int(cropped.shape[1])]
+            upper_text = handlehalfofplate.handle(plate_upper)
+            print ("Upper_Text = " + upper_text)
+            lower_text = handlehalfofplate.handle(plate_lower)
+            print ("Lower_text = " + lower_text)
+            number_plate = upper_text + " " + lower_text
+            print ("Number_Plate_Text = " + number_plate)
+            image = cv2.putText(image, number_plate, (0, 30),
+                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 255), 2)
+        # cv2.imshow('crop', crop)
+        # cv2.waitKey(0)
+
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
         result = np.asarray(image)
