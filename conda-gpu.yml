@@ -1,4 +1,4 @@
-name: yolov4-gpu
+name: yolov4-gpu-test
 
 dependencies:
   - python==3.7
@@ -15,3 +15,4 @@ dependencies:
     - absl-py
     - easydict
     - pillow
+    - flask
