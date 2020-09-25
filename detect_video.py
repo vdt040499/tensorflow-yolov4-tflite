@@ -235,7 +235,7 @@ def main(_argv):
             print("KeyMax: " + str(keyMax))
             if plateNumberDict[keyMax] > 4:
                 file = open("temp.txt", "w")
-                file.write(keyMax)
+                file.write(keyMax + "-" + str(plateNumberDict[keyMax]))
                 file.close()
                 image = cv2.putText(image, keyMax + " XIN MOI QUET THE", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
 
