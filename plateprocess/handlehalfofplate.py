@@ -25,7 +25,7 @@ def handle(img):
     # Segment kí tự
     kernel3 = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     thre_mor = cv2.morphologyEx(imgThresh, cv2.MORPH_DILATE, kernel3)
-    cont,h  = cv2.findContours(thre_mor, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    _,cont,_  = cv2.findContours(thre_mor, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
 
     plate_info = ""

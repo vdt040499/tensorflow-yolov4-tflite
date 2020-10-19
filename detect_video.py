@@ -14,7 +14,7 @@ import numpy as np
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 import plateprocess.handlehalfofplate as handlehalfofplate
-from flask import Flask, request, Response, jsonify, send_from_directory, abort
+# from flask import Flask, request, Response, jsonify, send_from_directory, abort
 
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
@@ -89,7 +89,7 @@ def crop_rotated_contour(plate, rect):
 def clean_plate(plate):
         gray = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        contours,h = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        _,contours,_ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
         if contours:
             areas = [cv2.contourArea(c) for c in contours]

@@ -1,41 +1,50 @@
-# from flask import Flask, request, Response, jsonify, send_from_directory, abort
-# import time
 from absl import app, logging
 import cv2
 import numpy as np
 import os
 import requests
+import RPi.GPIO as GPIO
+from mfrc522 import SimpleMFRC522
+import time
+import json
 
-# # Initialize Flask application
-# app = Flask(__name__)
+def unlock_cooler():
+    GPIO.setup(11, GPIO.OUT)
+    p = GPIO.PWM(11, 50)
+    p.start(2.5)
+    p.ChangeDutyCycle(7.5)
+    time.sleep(1.5)
+    p.ChangeDutyCycle(2.5)
+    time.sleep(1)
+    p.stop()
 
-# number = ""
-
-# # API that returns JSON with classes found in images
-# @app.route('/detections', methods=['GET'])
-# def get_detections():
-#     while True:
-#         file = open("temp.txt", "r")
-#         number = str(file.read())
-#         try:
-#             return jsonify({"response": number}), 200
-#         except FileNotFoundError:
-#             abort(404)
-
-# if __name__ == '__main__':
-#     app.run(debug=True, host = '0.0.0.0', port=5000)
 def main(argv):    
     url = 'https://votan-sparking.herokuapp.com/tickets/createticket'
-    userId = '17521022'
     while True:
         file = open("temp.txt", "r")
         number = str(file.read())
         if len(number) > 10:
             dataArr = number.split("-")
-            if (int(dataArr[1]) == 5):
-                payload = { 'numplate': dataArr[0], 'userId': userId}
-                r = requests.post(url, data=payload)
-                print('RESULT: ' + r.text)
-                
+            if (int(dataArr[1]) >= 5):
+                while True:
+                    reader = SimpleMFRC522()
+                    id, text = reader.read()
+                    print('IDcard: ', id)
+                    print('User: ', text)
+                    infoArr = text.split(' - ')
+                    studentId = str(infoArr[0])
+                    payload = { 'numplate': dataArr[0], 'userId': studentId }    
+                    r = requests.post(url, data=payload)
+                    d = json.loads(r.text)
+                    successRes = d["success"]
+                    messRes = d["message"]
+                    if successRes == False:
+                        print(messRes)
+                        break
+                    else:
+                        print(str(studentId) + 'TAO VE THANH CONG')
+                        unlock_cooler()
+                        break
+     
 if __name__ == '__main__':
     app.run(main)
